@@ -131,22 +131,29 @@ def fakeThinking():
 
 
 def main():
-    start_time = 0
-    while True:
-        print(CLEAR + RETURN)
-        printBoard(start_time)
-        getUserInput()
-        if gameOver(board) or not possible_moves(board):
-            win(gameOver(board))
-            printBoard(0)
-            break
-        # fakeThinking()
-        start_time = time.time()
-        getCompInput()
-        if gameOver(board) or not possible_moves(board):
-            win(gameOver(board))
-            printBoard(0)
-            break
+    quit = False
+    while not quit:
+        start_time = 0
+        while True:
+            print(CLEAR + RETURN)
+            printBoard(start_time)
+            getUserInput()
+            if gameOver(board) or not possible_moves(board):
+                win(gameOver(board))
+                printBoard(0)
+                break
+            # fakeThinking()
+            start_time = time.time()
+            getCompInput()
+            if gameOver(board) or not possible_moves(board):
+                win(gameOver(board))
+                printBoard(0)
+                break
+        stdin = input("\nWould you like to play again?\nType y for yes\nType n for no\n---> ")
+        if stdin == 'n':
+            quit = True
+        for i in range(9):
+            board[i] = "   "
     
-
+    print("Thank you for playing!!!")
 main()
