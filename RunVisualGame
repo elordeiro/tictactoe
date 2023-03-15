@@ -300,9 +300,9 @@ class VisualBoard():
 
     def draw_board(self):
         self.win.fill(BGCOLOR)
-        cross = pygame.image.load(circle_path)
+        cross = pygame.image.load(cross_path)
         cross = pygame.transform.rotozoom(cross, 0, 0.28)
-        circle = pygame.image.load(cross_path)
+        circle = pygame.image.load(circle_path)
         circle = pygame.transform.rotozoom(circle, 0, 0.1)
         pygame.draw.line(self.win, LINECOLOR, [200, 0], [200, 600], 5)
         pygame.draw.line(self.win, LINECOLOR, [400, 0], [400, 600], 5)
