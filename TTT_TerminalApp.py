@@ -91,6 +91,7 @@ class AiPlayer(Player):
                 best_move = move
         
         return best_move
+
     def get_next_move(self, board):
         best_move = -1
         if len(board.possible_moves()) == 9:
@@ -131,7 +132,6 @@ class Board():
             if i < 2:
                 print("-----------")
         
-
     def possible_moves(self):
         moves = []
         for i, pos in enumerate(self.board):
@@ -207,7 +207,6 @@ def game_loop(board, player1, player2):
         return False
     else:
         return True
-
 
 def start_menu():
     print(CLEAR + RETURN)

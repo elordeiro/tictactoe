@@ -4,6 +4,7 @@ import pygame
 import random
 import copy
 import time
+import os
 
 game_state_is = Enum('game_state_is', ['start', 'running', 'over'])
 CLEAR = "\033[2J"
@@ -14,7 +15,9 @@ SQUARECOLOR = pygame.Color("#F9EC7E")
 T_SQUARECOLOR = (178, 201, 227, 5)
 WIDTH = 600
 HEIGHT = 600
-
+base_path = os.path.dirname(__file__)
+circle_path = os.path.join(base_path, "circle.png")
+cross_path = os.path.join(base_path, "cross.png")
 start_time = time.time()
 
 class Player:
@@ -97,6 +100,7 @@ class AiPlayer(Player):
                 best_move = move
         
         return best_move
+    
     def get_next_move(self, board):
         best_move = -1
         if len(board.possible_moves()) == 9:
@@ -139,7 +143,6 @@ class Board():
             if i < 2:
                 print("-----------")
         
-
     def possible_moves(self):
         moves = []
         for i, pos in enumerate(self.board):
@@ -227,7 +230,6 @@ class VisualBoard():
         font = pygame.font.Font('freesansbold.ttf', 32)
         x, y = pygame.mouse.get_pos()
 
-        
         text = font.render('Tic-Tac-Toe', True, LINECOLOR, None)
         self.win.blit(text, (20, 20))
 
@@ -273,6 +275,8 @@ class VisualBoard():
             return 3
         elif 500 < self.x < 560 and 525 < self.y < 555:
             return 4
+        else:
+            return False
     
     def set_mode(self, mode):
         board = Board()
@@ -290,12 +294,14 @@ class VisualBoard():
             return board, player1, player2
         elif mode == 4:
             pygame.quit()
+        else:
+            return False
 
     def draw_board(self):
         self.win.fill(BGCOLOR)
-        cross = pygame.image.load("cross.png", )
+        cross = pygame.image.load(circle_path)
         cross = pygame.transform.rotozoom(cross, 0, 0.28)
-        circle = pygame.image.load("circle.png")
+        circle = pygame.image.load(cross_path)
         circle = pygame.transform.rotozoom(circle, 0, 0.1)
         pygame.draw.line(self.win, LINECOLOR, [200, 0], [200, 600], 5)
         pygame.draw.line(self.win, LINECOLOR, [400, 0], [400, 600], 5)
@@ -366,8 +372,7 @@ class VisualBoard():
             text = font.render(f'Quit', True, LINECOLOR, None)
             self.win.blit(text, (420, 310))
         
-        self.update_frame()
-        
+        self.update_frame()   
     
     def on_mouse_click(self):
         row = self.x // 200
@@ -376,8 +381,9 @@ class VisualBoard():
         if self.status == game_state_is.start:
             self.game_over_drawn = False
             mode = self.get_game_mode()
-            self.board, self.player1, self.player2 = self.set_mode(mode)
-            self.status = game_state_is.running
+            if mode:
+                self.board, self.player1, self.player2 = self.set_mode(mode)
+                self.status = game_state_is.running
         elif self.status == game_state_is.running:
             if self.turn % 2 == 0:
                 if isinstance(self.player1, HumanPlayer):
