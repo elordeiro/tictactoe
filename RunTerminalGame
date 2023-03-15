@@ -1,0 +1,248 @@
+#!/usr/bin/env python3
+import pygame
+from pygame.locals import *
+import random
+import copy
+import time
+
+CLEAR = "\033[2J"
+RETURN = "\033[H"
+start_time = time.time()
+
+class Player:
+    letter = " "
+    def __init__(self, letter):
+        self.letter = letter
+    
+class HumanPlayer(Player):
+    def __init__(self, letter):
+        super().__init__(letter)
+    
+    def get_next_move(self, board):
+        valid_moves = board.possible_moves()
+        while True:
+            userInput = int(input(f"Please enter next \"{self.letter}\" position -> ")) - 1
+            if 0 <= userInput < 9 and userInput in valid_moves:
+                board.play_position(self.letter, userInput)
+                # print(CLEAR + RETURN)
+                return
+            else:
+                print("Invalid Input")
+
+class AiPlayer(Player):
+    oponent = ""
+
+    def __init__(self, letter):
+        super().__init__(letter)
+        if letter == " X ":
+            self.oponent = " O "
+        else:
+            self.oponent = " X "
+    
+    def minimax(self, board, depth, maximizingPlayer):
+        if board.gameOver():
+            if board.get_winner() == " O ":
+                return -10
+            elif board.get_winner() == " X ":
+                return 10
+            elif board.get_winner() == "Draw":
+                return 0
+        
+        if maximizingPlayer:
+            best_score = -float("inf")
+            for move in board.possible_moves():
+                board.play_position(" X ", move)
+                score = self.minimax(board, (depth + 1), False)
+                board.play_position("   ", move)
+                best_score = max(best_score, score)
+            return best_score
+        else:
+            best_score = float("inf")
+            for move in board.possible_moves():
+                board.play_position(" O ", move)
+                score = self.minimax(board, (depth + 1), True)
+                board.play_position("   ", move)
+                best_score = min(best_score, score)
+            return best_score
+
+    def get_next_maximizer_move(self, board):
+        tempBoard = copy.deepcopy(board)
+        best_score = -float("inf")
+        best_move = None
+        for move in tempBoard.possible_moves():
+            tempBoard.play_position(self.letter, move)
+            score = self.minimax(tempBoard, 0, False)
+            tempBoard.play_position("   ", move)
+            if score > best_score:
+                best_score = score
+                best_move = move
+        
+        return best_move
+    
+    def get_next_minimizer_move(self, board):
+        tempBoard = copy.deepcopy(board)
+        best_score = float("inf")
+        best_move = None
+        for move in tempBoard.possible_moves():
+            tempBoard.play_position(self.letter, move)
+            score = self.minimax(tempBoard, 0, True)
+            tempBoard.play_position("   ", move)
+            if score < best_score:
+                best_score = score
+                best_move = move
+        
+        return best_move
+    def get_next_move(self, board):
+        best_move = -1
+        if len(board.possible_moves()) == 9:
+            board.play_position(self.letter, random.randrange(0, 9))
+            return 
+        if self.letter == " X ":
+            best_move = self.get_next_maximizer_move(board)
+        else:
+            best_move = self.get_next_minimizer_move(board)
+
+        board.play_position(self.letter, best_move)
+        time.sleep(0.5)
+        return 
+    
+class Board():
+    board = []
+    winner = "test"
+    
+    def __init__(self) -> None:
+        self.board = ["   "] * 9
+
+    def printBoard(self):
+        for i in range(3):
+            for j in range(3):
+                if j < 2:
+                    print(" " + str(i * 3 + j + 1) + " |", end="")
+                else:
+                    print(" " + str(i * 3 + j + 1))
+            if i < 2:
+                print("-----------")
+        print("###########")
+        for i in range(3):
+            for j in range(3):
+                if j < 2:
+                    print(self.board[i * 3 + j] + "|", end="")
+                else:
+                    print(self.board[i * 3 + j])
+            if i < 2:
+                print("-----------")
+        
+
+    def possible_moves(self):
+        moves = []
+        for i, pos in enumerate(self.board):
+            if pos == "   ":
+                moves.append(i)
+        return moves
+
+    def print_winner(self):
+        print(CLEAR + RETURN)
+        if self.winner == "Draw":
+            print(" -----------")
+            print(f"|  Draw !!! |")
+            print(" -----------\n")
+        else:
+            print(" -----------")
+            print(f"|{self.winner}Wins!!! |")
+            print(" -----------\n")
+
+    def gameOver(self):
+        rows = [self.board[(i*3):(i*3)+3] for i in range(3)]
+        for row in rows:                                                        # Check rows for winner
+            if all(spot == row[0] and row[0] != "   " for spot in row):
+                self.winner = row[0]
+                return True
+
+        cols = [[self.board[i] for i in range(j, 9, 3)] for j in range(3)]
+        for col in cols:                                                        # Check cols for winner
+            if all(spot == col[0] and col[0] != "   " for spot in col):
+                self.winner = col[0]
+                return True
+
+        diag1 = [self.board[i] for i in [0, 4, 8]]
+        if all(spot == diag1[0] and diag1[0] != "   " for spot in diag1):       # Check negative diagonal for winner
+                self.winner = diag1[0]
+                return True
+        
+        diag2 = [self.board[i] for i in [2, 4, 6]]
+        if all(spot == diag2[0] and diag2[0] != "   " for spot in diag2):       # Check positive diagonal for winner
+                self.winner = diag2[0]
+                return True
+        
+        if not self.possible_moves():
+            self.winner = "Draw"
+            return True
+        
+        return False
+
+    def get_winner(self):
+        return self.winner
+
+    def play_position(self, letter, pos):
+        self.board[pos] = letter
+    
+def game_loop(board, player1, player2):
+    while True:
+        print(CLEAR + RETURN)
+        board.printBoard()
+        player1.get_next_move(board)
+        if board.gameOver():
+            board.print_winner()
+            board.printBoard()
+            break
+        print(CLEAR + RETURN)
+        board.printBoard()
+        player2.get_next_move(board)
+        if board.gameOver():
+            board.print_winner()
+            board.printBoard()
+            break
+    stdin = input("\nWould you like to play again?\nType y for yes\nType n for no\n---> ")
+    
+    if stdin == 'n':
+        return False
+    else:
+        return True
+
+
+def start_menu():
+    print(CLEAR + RETURN)
+    print("Welcom to Tic-Tac-Toe")
+    print("Please Choose 1 of the following game modes:")
+    print("1) Human vs Human")
+    print("2) Human vs AI")
+    print("3) AI vs AI")
+    board = Board()
+    while True:
+        mode = int(input("--> "))
+        if 0 < mode < 4:
+            if mode == 1:
+                player1 = HumanPlayer(" X ")
+                player2 = HumanPlayer(" O ")
+                return board, player1, player2
+            elif mode == 2:
+                player1 = HumanPlayer(" X ")
+                player2 = AiPlayer(" O ")
+                return board, player1, player2
+            else:
+                player1 = AiPlayer(" X ")
+                player2 = AiPlayer(" O ")
+                return board, player1, player2
+        else:
+            print("Invalid Input")
+
+def main():
+    running = True
+    while running:
+        board, player1, player2 = start_menu()
+        running = game_loop(board, player1, player2)
+        
+    print("Thank you for playing!!!")
+
+if __name__=="__main__":
+    main()
