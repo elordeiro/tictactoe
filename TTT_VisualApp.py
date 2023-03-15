@@ -13,8 +13,11 @@ BGCOLOR = pygame.Color("#E3CCB2")
 LINECOLOR = pygame.Color("#E26274")
 SQUARECOLOR = pygame.Color("#F9EC7E")
 T_SQUARECOLOR = (178, 201, 227, 5)
+CENTER_SQUARE_COLOR = ("#92140C")
+CROSS_SQUARE_COLOR = ("#1E1E24")
+EDGE_SQUARE_COLOR = ("#111D4A")
 WIDTH = 600
-HEIGHT = 600
+HEIGHT = 650
 base_path = os.path.dirname(__file__)
 circle_path = os.path.join(base_path, "circle.png")
 cross_path = os.path.join(base_path, "cross.png")
@@ -318,7 +321,7 @@ class VisualBoard():
             elif row <  self.x < row + 200 and col < self.y < col + 200:
                 rect = pygame.Rect(row - 17.5, col - 17.5, 196, 196)
                 pygame.draw.rect(self.win, SQUARECOLOR, rect)
-        
+
         self.update_frame()
 
     def draw_game_over(self):
@@ -371,9 +374,30 @@ class VisualBoard():
         else:
             text = font.render(f'Quit', True, LINECOLOR, None)
             self.win.blit(text, (420, 310))
-        
+
         self.update_frame()   
-    
+
+    def draw_footer(self):
+        font = pygame.font.Font('freesansbold.ttf', 32)
+        rect1 = pygame.Rect(0, 600, 600, 50)
+        rect2 = pygame.Rect(0, 600, 600, 50)
+        
+        pygame.draw.rect(self.win, CROSS_SQUARE_COLOR, rect2)
+        pygame.draw.rect(self.win, (0, 50, 100), rect1, 5)
+
+        if self.status == game_state_is.start:
+            text = font.render("Welcome to tic-tac-toe by elordeiro", True, SQUARECOLOR, None)
+            self.win.blit(text, (25, 610))
+        elif self.status == game_state_is.running:
+            if self.turn % 2 == 0:
+                text = font.render("X's Turn", True, SQUARECOLOR, None)
+            else:
+                text = font.render("O's Turn", True, SQUARECOLOR, None)
+            self.win.blit(text, (240, 610))
+        else:
+            text = font.render("Thank you for playing!", True, SQUARECOLOR, None)
+            self.win.blit(text, (125, 610))
+
     def on_mouse_click(self):
         row = self.x // 200
         col = self.y // 200
@@ -444,6 +468,7 @@ class VisualBoard():
         self.update_frame()
     
     def update_frame(self):
+        self.draw_footer()
         clock = pygame.time.Clock()
         pygame.display.update()
         clock.tick(30)
